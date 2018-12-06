@@ -36,9 +36,17 @@ public class Cell {
     	return this.State;
     }
 
-    
-    public void Open() {
-    	this.State = cellState.Open;
+    /*
+     @return 	was a bomb (game lost)?
+     */
+    public boolean Open() {
+    	if(isBomb) {
+			this.State = cellState.Exploded;
+			return true;
+		}else{
+			this.State = cellState.Open;
+			return false;
+		}
     }
 
     
