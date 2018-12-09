@@ -12,18 +12,24 @@ public class Interpreter {
         this.field = field;
     }
 
-    public String GetLastError(){
-        return lastError;
-    }
 
     public void Read() {
         String[] parts;
 
+        boolean firstTime = true;
+
         do {
+            if(!firstTime){
+                System.out.println(lastError);
+            }
+
             System.out.println("Bitte geben Sie einen Befehl ein {f(lag)|o(pen) x y}.");
             String input = scanner.nextLine();
             parts = input.split(" ");
 
+            if(firstTime){
+               firstTime = false;
+            }
         }while(!ValidateInput(parts));
 
         Execute(parts);
@@ -47,8 +53,8 @@ public class Interpreter {
     }
 
     private boolean ValidateState(String[] input) {
-        int x = Integer.parseInt(input[1]);
-        int y = Integer.parseInt(input[2]);
+        int x = Integer.parseInt(input[1]) - 1;
+        int y = Integer.parseInt(input[2]) - 1;
 
         if(x < 0 || x > field.GetWidth() - 1
         || y < 0 || y > field.GetHeight() - 1){
@@ -106,8 +112,8 @@ public class Interpreter {
 
 
     private void Execute(String[] input) {
-        int x = Integer.parseInt(input[1]);
-        int y = Integer.parseInt(input[2]);
+        int x = Integer.parseInt(input[1]) - 1;
+        int y = Integer.parseInt(input[2]) - 1;
 
         switch(input[0]){
             case "o":

@@ -6,7 +6,6 @@ public class Minesweeper {
 
     public Minesweeper(int width, int height, int bombAmount){
         field = new Field(width, height, bombAmount);
-        field.Initialize();
 
         interpreter = new Interpreter(field);
     }
@@ -19,12 +18,11 @@ public class Minesweeper {
         }while(!field.GameOver);
 
     	if(field.Won){
-    	    System.out.println("Gratulation");
+    	    System.out.println("Gratulation! Sie haben gewonnen.");
         }else{
-            System.out.println("Leider hast du eine Bombe getroffen");
+            System.out.println("Game Over! Sie haben eine Bombe getroffen.");
         }
-        field.PrintField();
 
-    	interpreter.ReadOneEnter();
+        field.PrintField();
     }
 }

@@ -20,24 +20,24 @@ public class Field {
 	}
 
     public void OpenCell(int x, int y) {
-    	if(Roster[x][y].Open()){
+    	if(Roster[y][x].Open()){
     		EndGame(false);
 		}
     }
 
     
     public void FlagCell(int x, int y) {
-    	Roster[x][y].Flag();
+    	Roster[y][x].Flag();
     }
 
 
     public int GetCellValue(int x, int y) {
-    	return Roster[x][y].GetBombValue();
+    	return Roster[y][x].GetBombValue();
     }
 
 
     public cellState GetCellState(int x, int y) {
-    	return Roster[x][y].GetCellState();
+    	return Roster[y][x].GetCellState();
     }
 
     
@@ -51,14 +51,16 @@ public class Field {
     		for(int j = (x-1);j <= (x+1); j++) {
     			
     			if((i >= 0 && i < height) && (j >= 0 && j < width)) {
-    				neighbours[counterX][counterY] = Roster[j][i];
-    			}
+    				neighbours[counterY][counterX] = Roster[i][j];
+    			}else{
+					neighbours[counterY][counterX] = null;
+				}
     			
-    			counterY++;
+    			counterX++;
         	}
     		
-    		counterY = 0;
-    		counterX++;
+    		counterX = 0;
+    		counterY++;
     	}
     	
     	return neighbours;
@@ -67,8 +69,8 @@ public class Field {
     public Cell[][] GetNeighbours(Cell cell){
     	for(int i = 0;i < height; i++) {
     		for(int j = 0;j < width; j++) {
-    			if(Roster[j][i].equals(cell)) {
-    				return GetNeighbours(i, j);
+    			if(Roster[i][j].equals(cell) && Roster[i][j] == cell) {
+    				return GetNeighbours(j, i);
     			}
         	}
     	}
@@ -80,50 +82,86 @@ public class Field {
     public void PrintField() {
     	for(int i = 0;i < height; i++) {
     		for(int j = 0;j < width; j++) {
-    			System.out.println(Roster[j][i].GetShowValue() + " ");
+    			System.out.printf("%3s", Roster[i][j].GetShowValue());
         	}
+			System.out.println();
     	}
     }
 
     
     public void EndGame(boolean won) {
-    	GameOver = true;
+    	this.GameOver = true;
 		this.Won = won;
     }
 
+    public void CheckIfWon(){
+		boolean allNotBombsOpened = true;
+		boolean allBombsFlagged = true; //Für zwei Tests verwendet, da beide der Tests zusammen gehören und notwenig sind für einen Sieg
+
+		for(int i = 0;i < height; i++) {
+			for(int j = 0;j < width; j++) {
+				if(Roster[i][j].GetCellState() == cellState.Unopened){
+					if(!Roster[i][j].isBomb()){ //Ungeöffnete Nicht-Bombe ist nicht gewonnen
+						if(allNotBombsOpened){ allNotBombsOpened = false; }
+					}
+				}else if(Roster[i][j].GetCellState() == cellState.Flagged){ //Geflaggte Nicht-Bombe ist nicht gewonnen (Ansonsten könnte man einfach alles Flaggen)
+					if(!Roster[i][j].isBomb()){
+						if(allBombsFlagged){ allBombsFlagged = false; }
+					}
+				}
+
+				if(Roster[i][j].isBomb()){
+					if(Roster[i][j].GetCellState() != cellState.Flagged){ //Ungeflaggte Bombe ist nicht gewonnen
+						if(allBombsFlagged){ allBombsFlagged = false; }
+					}
+				}
+			}
+		}
+
+		if(allBombsFlagged || allNotBombsOpened){
+			EndGame(true);
+		}
+	}
+
     
-    private void SetBombs(int amount) {
+    public void SetBombs(int amount) {
     	for(int i = 0; i < amount; i++) {
-    		//int x = rnd.nextInt(this.width);
-    		//int y = rnd.nextInt(this.height);
+    		int x = rnd.nextInt(this.width);
+    		int y = rnd.nextInt(this.height);
 
-			int x = 0;
-			int y = 0;
+			//int x = 0;
+			//int y = 0;
 
-    		if(Roster[x][y].isBomb) {
+    		if(this.Roster[y][x].isBomb()) {
     			i--;
     			continue;
     		}else {
-    			Roster[x][y].isBomb = true;
+				this.Roster[y][x].setBomb(true);
     		}
     	}
     }
 
     
     private void CreateField() {
-    	//this.Roster = new Cell[height][width]; //width/height... überau im code vil vrtuuscht u so muäsmä de aluägä
+		this.Roster = new Cell[height][width];
+		for(int i = 0;i < height; i++) {
+			for(int j = 0;j < width; j++) {
+				Roster[i][j] = new Cell();
+				Roster[i][j].SetField(this);
 
-		//anscheinend muss mit for gearbeitet werden..
-		// https://stackoverflow.com/questions/12231453/syntax-for-creating-a-two-dimensional-array
-
-		this.Roster = new Cell[][]{
-				{ new Cell(), new Cell(), new Cell(), new Cell(), new Cell(), new Cell(), new Cell(), new Cell(), new Cell(), new Cell() },
-				{ new Cell(), new Cell(), new Cell(), new Cell(), new Cell(), new Cell(), new Cell(), new Cell(), new Cell(), new Cell() },
-				{ new Cell(), new Cell(), new Cell(), new Cell(), new Cell(), new Cell(), new Cell(), new Cell(), new Cell(), new Cell() },
-				{ new Cell(), new Cell(), new Cell(), new Cell(), new Cell(), new Cell(), new Cell(), new Cell(), new Cell(), new Cell() },
-				{ new Cell(), new Cell(), new Cell(), new Cell(), new Cell(), new Cell(), new Cell(), new Cell(), new Cell(), new Cell() }
-		};
+				//DEBUG
+				//Roster[i][j].id = j+1 + (width * i);
+			}
+		}
     }
+
+    private void CalculateValues(){
+		for(int i = 0;i < height; i++) {
+			for(int j = 0;j < width; j++) {
+				Roster[i][j].CalculateBombValue();
+			}
+		}
+	}
 
     
     public Field(int width, int height, int bombAmount) {
@@ -131,14 +169,7 @@ public class Field {
 		this.height = height;
 
 		CreateField();
-    	SetBombs(bombAmount);
+		SetBombs(bombAmount);
+		CalculateValues();
     }
-
-    public void Initialize(){
-		for(int i = 0;i < height; i++) {
-			for(int j = 0;j < width; j++) {
-				Roster[j][i].SetField(this);
-			}
-		}
-	}
 }

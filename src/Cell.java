@@ -1,34 +1,53 @@
 public class Cell {
-	public boolean isBomb;
+
+	//DEBUG
+	//public int id;
+
+	public boolean isBomb() {
+		return isBomb;
+	}
+
+	public void setBomb(boolean bomb) {
+		isBomb = bomb;
+	}
+
+	private boolean isBomb;
 
     private cellState State;
     private Field field;
     
+	private int bombValue;
 
     public Cell() {
     	isBomb = false;
-    	State = cellState.Unopened;
+		State = cellState.Unopened;
+
+		//DEBUG
+		//State = cellState.Open;
     }
     
     public void SetField(Field field) {
     	this.field = field;
     }
+
+	public int GetBombValue() {
+		return bombValue;
+	}
     
-    
-    public int GetBombValue() {
+    public void CalculateBombValue() {
     	Cell[][] neighbours = field.GetNeighbours(this);
     	
     	int bombs = 0;
     	
     	for(int i = 0; i < 3; i++) {
     		for(int j = 0; j < 3; j++) {
-        		if(i != 1 && j != 1) {
-        			bombs += neighbours[i][j].GetBombValue();
-        		}
+        		if(neighbours[i][j] != null && neighbours[i][j] != this && !neighbours[i][j].equals(this)) {
+						bombs += neighbours[i][j].isBomb() ? 1 : 0;
+				}
         	}
     	}
     	
-    	return bombs;
+    	bombValue = bombs;
     }
 
     
@@ -37,7 +56,7 @@ public class Cell {
     }
 
     /*
-     @return 	was a bomb (game lost)?
+     @return 	was a bomb (game lost)
      */
     public boolean Open() {
     	if(isBomb) {
@@ -45,6 +64,12 @@ public class Cell {
 			return true;
 		}else{
 			this.State = cellState.Open;
+
+			if(GetBombValue() == 0){
+				OpenAllZeroNeighbours();
+			}
+
+			field.CheckIfWon();
 			return false;
 		}
     }
@@ -56,6 +81,8 @@ public class Cell {
     	}else if (this.State == cellState.Unopened){
     		this.State = cellState.Flagged;
     	}
+
+		field.CheckIfWon();
     }
     
     public String GetShowValue() {
@@ -63,7 +90,10 @@ public class Cell {
     	case Unopened:
     		return "☐";
     	case Open:
-    		return String.valueOf(this.GetBombValue());
+    		return String.valueOf(GetBombValue());
+					//DEBUG
+					// + (isBomb ? "t" : "f")
+					// + id;
     	case Flagged: 
     		return "F";
     	case Exploded: 
@@ -76,12 +106,11 @@ public class Cell {
     
     private void OpenAllZeroNeighbours() {
 		Cell[][] neighbours = field.GetNeighbours(this);
-
     	
     	for(int i = 0; i < 3; i++) {
     		for(int j = 0; j < 3; j++) {
-        		if(i != 1 && j != 1) {
-        			if(neighbours[i][j].GetBombValue() == 0) {
+        		if(neighbours[i][j] != null && neighbours[i][j] != this && !neighbours[i][j].equals(this)) {
+					if(!neighbours[i][j].isBomb() && neighbours[i][j].GetCellState() == cellState.Unopened) {
         				neighbours[i][j].Open();
         			}
         		}
