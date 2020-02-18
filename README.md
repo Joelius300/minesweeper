@@ -1,5 +1,5 @@
 # minesweeper
-This is another one of those projects I had to do for school. It's written in java and therefore deserves to be bad (jk, it'd suck anyway).  
+This is another one of those projects I had to do for school.  
 As you might have seen with some other repositories of mine, I like to document what I've done no matter how bad it was - it's a way to see how much I improve as a developer over time.
 
 # Original Readme (archiving purposes)
